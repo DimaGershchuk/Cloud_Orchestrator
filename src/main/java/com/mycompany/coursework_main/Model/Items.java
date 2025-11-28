@@ -12,11 +12,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Items {
 
-    // Це унікальний ID документа в базі (той довгий GUID)
+    // Unique id for each item
     @JsonProperty("id")
     private String id;
 
-    // Це твій логічний ID товару ("i002")
     @JsonProperty("item_id")
     private String itemId;
 
@@ -29,16 +28,21 @@ public class Items {
     @JsonProperty("category")
     private String category;
 
-    // УВАГА: Поки що це String, бо в базі "Leeds". 
-    // Для роботи OSRM пізніше треба буде змінити структуру в базі на координати.
+    
     @JsonProperty("location")
     private String location;
+    
+    @JsonProperty("latitude")
+    private Double latitude;
+    
+    @JsonProperty("longitude")
+    private Double longitude;
 
     @JsonProperty("daily_rate")
     private double dailyRate;
 
     @JsonProperty("available")
-    private boolean available; // В JSON "available", не "availability"
+    private boolean available;
 
     @JsonProperty("condition")
     private String condition;
@@ -46,16 +50,77 @@ public class Items {
     @JsonProperty("description")
     private String description;
 
-    // Обов'язковий порожній конструктор
+    //Field does not exist in database, but we use it for calculating distance between user and item
+    private Double distance;
+    
+    // Default empty constructor
     public Items() {}
 
     // --- Getters ---
     public String getItemId() { return itemId; }
     public String getName() { return name; }
     public String getLocation() { return location; }
+    public Double getLatitude() {return latitude;}
+    public Double getLongitude() {return longitude; }
     public double getDailyRate() { return dailyRate; }
+    public boolean getAvailable() {return available;}
+    public String getCondition() {return condition; }
+    public String getDescription() {return description; }
+    public Double getDistance() {return distance;}
     
-    // Додай інші геттери та сеттери за потреби
+    // --- Setters ---
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public void setDailyRate(double dailyRate) {
+        this.dailyRate = dailyRate;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDistance(Double distance) {
+        this.distance = distance;
+    }
+    
 
     @Override
     public String toString() {
