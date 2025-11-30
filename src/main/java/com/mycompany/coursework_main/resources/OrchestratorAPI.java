@@ -34,14 +34,14 @@ public class OrchestratorAPI {
     public List<Items> searchItems(
         @QueryParam("city") String city,
         @QueryParam("maxPrice") Double maxPrice,
-        @QueryParam("userLat") Double userLat,
-        @QueryParam("userLon") Double userLon) throws IOException, InterruptedException {
+        @QueryParam("userLon") Double userLon,
+        @QueryParam("userLat") Double userLat) throws IOException, InterruptedException {
             
         List<Items> items = dbService.getItemsFiltered(city, maxPrice);
         if(userLat != null && userLon != null){
             for(Items item : items){
                 if(item.getLatitude() != null && item.getLongitude() != null){
-                    Double dist = distanceService.getDistance(userLon, userLat, item.getLatitude(), item.getLongitude());
+                    Double dist = distanceService.getDistance(userLon, userLat, item.getLongitude(), item.getLatitude());
                     item.setDistance(dist);
                 }
             }
