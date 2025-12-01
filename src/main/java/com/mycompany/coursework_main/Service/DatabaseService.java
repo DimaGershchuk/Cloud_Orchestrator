@@ -9,6 +9,7 @@ import com.azure.cosmos.models.SqlParameter;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import com.mycompany.coursework_main.Model.Items;
+import com.mycompany.coursework_main.Model.RentalRequest;
 import java.util.ArrayList;
 import java.util.List;
 /**
@@ -17,12 +18,12 @@ import java.util.List;
  */
 public class DatabaseService {
     private static final String HOST = "https://myfirstfreedb.documents.azure.com:443/";
-    private static final String KEY = "";
+    private static final String KEY = "AEdwAeGz2Ga7R0AOTaQ02uzgej2UeIUCGdghPYIWMfeCuuabBqiP3QAdicUyuVc14HsiuFsNxueHACDboJWLjg==";
     private static final String DATABASE_NAME = "coursework";
     
     private CosmosClient client;
     private CosmosContainer itemContainer;    
-    //private CosmosContainer requestContainer;
+    private CosmosContainer requestContainer;
 
     //Create connection to CosmosDb
     public DatabaseService() {
@@ -33,8 +34,8 @@ public class DatabaseService {
             .buildClient();
 
         CosmosDatabase database = client.getDatabase(DATABASE_NAME);
-        this.itemContainer = database.getContainer("items");
-        //this.requestContainer = database.getContainer("requests");
+        this.itemContainer = database.getContainer("items"); //Working with items container
+        this.requestContainer = database.getContainer("requests"); // Working with requests container to manage item`s request
     }
 
     //Working with items requests
@@ -73,4 +74,10 @@ public class DatabaseService {
         
         return resultList;
     }
+    
+    public void createRequest(RentalRequest request){
+        requestContainer.createItem(request);
+    }
+    
+    
 }
