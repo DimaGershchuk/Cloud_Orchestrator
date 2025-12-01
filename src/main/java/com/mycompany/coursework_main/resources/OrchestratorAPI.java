@@ -1,11 +1,14 @@
 package com.mycompany.coursework_main.resources;
 
 import com.mycompany.coursework_main.Model.Items;
+import com.mycompany.coursework_main.Model.RentalRequest;
 import com.mycompany.coursework_main.Service.DatabaseService;
 import com.mycompany.coursework_main.Service.DistanceService;
 import java.io.IOException;
 import java.util.List;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -49,5 +52,18 @@ public class OrchestratorAPI {
         return items;
     }
     
+    @POST
+    @Path("/requests")
+    @Consumes(MediaType.APPLICATION_JSON) // Consume JSON
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createRequest(RentalRequest request){
+        request.setStatus("pending");
+        try {
+            dbService.createRequest(request);
+            return Response.status(Response.Status.CREATED).entity(request).build();
+        } catch (Exception e) {
+            return Response.serverError().entity("Error creating request").build();
+        }
+    }
 }
 
