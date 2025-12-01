@@ -5,6 +5,7 @@
 package com.mycompany.coursework_main.Service;
 import com.azure.cosmos.*;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
+import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.models.SqlParameter;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.util.CosmosPagedIterable;
@@ -77,6 +78,21 @@ public class DatabaseService {
     
     public void createRequest(RentalRequest request){
         requestContainer.createItem(request);
+    }
+    
+    //Get item by id (needed for changing item status)
+    public RentalRequest getRequestById(String id){
+        try {
+            return requestContainer.readItem(id, new PartitionKey(id), RentalRequest.class).getItem();
+        } catch (Exception e) {
+            System.err.println("Request not found: " + id);
+            return null;
+        }
+    }
+    
+    //Update request (override with different status)
+    public void updateRequest(RentalRequest request){
+        requestContainer.upsertItem(request);
     }
     
     
