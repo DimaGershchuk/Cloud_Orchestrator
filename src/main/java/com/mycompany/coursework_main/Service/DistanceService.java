@@ -18,7 +18,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.util.Map;
 import java.net.http.HttpResponse;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -29,8 +31,26 @@ public class DistanceService {
     private static final HttpClient client = HttpClient.newBuilder().build();
     private static final ObjectMapper mapper = new ObjectMapper();
     
+    // Using ConcurrentHashMap to store API query results.
+    // This ensures Thread-Safety when accessed by multiple concurrent users (simulating Big Data load).
+    // Key (String): Unique composite key of coordinates.
+    // Value (Double): Calculated distance in kilometers.
+    private static final Map<String, Double> distanceCache = new ConcurrentHashMap<>();
+    
     public Double getDistance(double userLon, double userLat, double itemLon, double itemLat) throws IOException, InterruptedException {
+        
+        //Generate cache key
+        String cashKey = userLat + "," + userLon + "-" + itemLat + "," + itemLon;
+        
+        // Check if the distance for this specific route has already been computed.
+        // If found, return the value instantly from memory (O(1) complexity),
+        if(distanceCache.containsKey(cashKey)){
+            return distanceCache.get(cashKey);
+        }
+        
+        
         try {
+            
             
             //Build URL to connect with external API
             String API_BASE_URL = String.format(java.util.Locale.US,"http://router.project-osrm.org/route/v1/driving/%f,%f;%f,%f?overview=false",
@@ -51,7 +71,10 @@ public class DistanceService {
                 
                 if(data.getRoutes() != null && data.getRoutes().length > 0){
                     //Return distance of first found route
-                    return data.getRoutes()[0].getDistance();
+                    Double dist = data.getRoutes()[0].getDistance() / 1000;
+                    // Store the valid result in the cache before returning.
+                    distanceCache.put(cashKey, dist);
+                    return dist;
                 }
               } 
               
@@ -60,5 +83,11 @@ public class DistanceService {
             return null;
         }
         return null; 
+    }
+    
+    // Utility method to clear the cache.
+    public void clearCache() {
+        distanceCache.clear();
+        System.out.println("--- CACHE CLEARED ---");
     }
 }
