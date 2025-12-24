@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.coursework_main.Service;
+import com.azure.json.implementation.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.coursework_main.Model.Routes;
 import java.io.IOException;
@@ -21,6 +22,8 @@ import java.net.http.HttpRequest;
 import java.util.Map;
 import java.net.http.HttpResponse;
 import java.util.concurrent.ConcurrentHashMap;
+import java.net.http.HttpTimeoutException;
+import java.time.Duration;
 
 /**
  *
@@ -28,7 +31,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DistanceService {
    
-    private static final HttpClient client = HttpClient.newBuilder().build();
+    private static final HttpClient client = HttpClient.newBuilder()
+                                                .connectTimeout(Duration.ofSeconds(5))
+                                                .build();
+    
     private static final ObjectMapper mapper = new ObjectMapper();
     
     // Using ConcurrentHashMap to store API query results.
@@ -64,8 +70,9 @@ public class DistanceService {
             
              //Sending request and receiving response
              HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+             int status = response.statusCode();
              
-             if(response.statusCode() == 200){
+             if(status == 200){
                 //Deserializing, convert the JSON to Java object 
                 Routes data = mapper.readValue(response.body(), Routes.class);
                 
@@ -76,12 +83,29 @@ public class DistanceService {
                     distanceCache.put(cashKey, dist);
                     return dist;
                 }
-              } 
-              
-        } catch(IOException | InterruptedException e){
-            System.err.println("OSRM Error: " + e.getMessage());
+              } else if (status >= 400 && status < 500) {
+                  System.err.println("Client Error (OSRM): " + status + " for URL: " + API_BASE_URL);
+                  return null;
+              } else if (status >= 500) {
+                  System.err.println("Server Error (OSRM): " + status);
+                  return null;
+              }
+        }
+        
+        catch(HttpTimeoutException e){
+            System.err.println("Timeout Error: OSRM API took too long to respond.");
             return null;
         }
+        
+        catch (JsonProcessingException e) {
+            System.err.println("Data Error: Could not parse OSRM response. " + e.getMessage());
+        }
+        
+        catch(IOException | InterruptedException e){
+            System.err.println("OSRM Error: " + e.getMessage());
+            return null;
+        } 
+        
         return null; 
     }
     
