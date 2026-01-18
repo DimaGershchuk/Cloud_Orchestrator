@@ -1,12 +1,15 @@
 package com.mycompany.coursework_main.resources;
 
+import com.mycompany.coursework_main.Model.ItemSummary;
 import com.mycompany.coursework_main.Model.Items;
 import com.mycompany.coursework_main.Model.RentalRequest;
 import com.mycompany.coursework_main.Service.DatabaseService;
 import com.mycompany.coursework_main.Service.DistanceService;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -36,22 +39,27 @@ public class OrchestratorAPI {
     @GET
     @Path("/items")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Items> searchItems(
+    public List<ItemSummary> searchItems(
         @QueryParam("city") String city,
         @QueryParam("maxPrice") Double maxPrice,
         @QueryParam("userLon") Double userLon,
         @QueryParam("userLat") Double userLat) throws IOException, InterruptedException {
             
-        List<Items> items = dbService.getItemsFiltered(city, maxPrice);
+        List<Items> fullItems = dbService.getItemsFiltered(city, maxPrice);
         if(userLat != null && userLon != null){
-            for(Items item : items){
+            for(Items item : fullItems){
                 if(item.getLatitude() != null && item.getLongitude() != null){
                     Double dist = distanceService.getDistance(userLon, userLat, item.getLongitude(), item.getLatitude());
                     item.setDistance(dist);
                 }
             }
         }
-        return items;
+        List<ItemSummary> summaries = new ArrayList<>();
+        for(Items item : fullItems){
+            summaries.add(new ItemSummary(item));
+        }
+        
+        return summaries;
     }
     
     @POST
@@ -90,5 +98,6 @@ public class OrchestratorAPI {
        }
        
     }
+    
 }
 
